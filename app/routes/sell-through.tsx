@@ -2,14 +2,14 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { fetchAllOrders, loadToken } from "~/lib/shopify.server";
 
-type CustomerMonth = {
+type CustomerRow = {
   customerId: number;
   name: string;
   email: string;
-  month: string;
   orderCount: number;
-  totalValue: number;
-  avgDaysBetweenOrders: number | null;
+  totalSpend: number;
+  lastOrderDate: string;
+  daysSinceLastOrder: number;
 };
 
 export async function loader(_: LoaderFunctionArgs) {
@@ -21,65 +21,54 @@ export async function loader(_: LoaderFunctionArgs) {
   const orders = await fetchAllOrders({
     shop: token.shop,
     accessToken: token.accessToken,
-    sinceDays: 365,
   });
 
-  const bulk = orders.filter((o) => Number(o.total_price) >= 500 && o.customer);
-
-  type Bucket = {
+  type CustomerAccum = {
     customerId: number;
     name: string;
     email: string;
-    month: string;
-    dates: Date[];
-    total: number;
+    orderCount: number;
+    totalSpend: number;
+    lastOrderDate: Date;
   };
-  const buckets = new Map<string, Bucket>();
 
-  for (const o of bulk) {
-    const c = o.customer!;
+  const byCustomer = new Map<number, CustomerAccum>();
+
+  for (const o of orders) {
+    if (!o.customer) continue;
+    const c = o.customer;
     const created = new Date(o.created_at);
-    const month = `${created.getUTCFullYear()}-${String(created.getUTCMonth() + 1).padStart(2, "0")}`;
-    const key = `${c.id}:${month}`;
     const name = [c.first_name, c.last_name].filter(Boolean).join(" ") || c.email || `#${c.id}`;
-    const existing = buckets.get(key);
+    const existing = byCustomer.get(c.id);
     if (existing) {
-      existing.dates.push(created);
-      existing.total += Number(o.total_price);
+      existing.orderCount += 1;
+      existing.totalSpend += Number(o.total_price);
+      if (created > existing.lastOrderDate) existing.lastOrderDate = created;
     } else {
-      buckets.set(key, {
+      byCustomer.set(c.id, {
         customerId: c.id,
         name,
         email: c.email ?? "",
-        month,
-        dates: [created],
-        total: Number(o.total_price),
+        orderCount: 1,
+        totalSpend: Number(o.total_price),
+        lastOrderDate: created,
       });
     }
   }
 
-  const rows: CustomerMonth[] = [...buckets.values()]
-    .map((b) => {
-      const sorted = b.dates.slice().sort((a, b) => a.getTime() - b.getTime());
-      let avg: number | null = null;
-      if (sorted.length > 1) {
-        const gaps: number[] = [];
-        for (let i = 1; i < sorted.length; i++) {
-          gaps.push((sorted[i].getTime() - sorted[i - 1].getTime()) / 86400_000);
-        }
-        avg = gaps.reduce((s, g) => s + g, 0) / gaps.length;
-      }
-      return {
-        customerId: b.customerId,
-        name: b.name,
-        email: b.email,
-        month: b.month,
-        orderCount: b.dates.length,
-        totalValue: b.total,
-        avgDaysBetweenOrders: avg,
-      };
-    })
-    .sort((a, b) => (b.month === a.month ? b.totalValue - a.totalValue : b.month.localeCompare(a.month)));
+  const now = Date.now();
+  const rows: CustomerRow[] = [...byCustomer.values()]
+    .filter((c) => c.totalSpend >= 500)
+    .map((c) => ({
+      customerId: c.customerId,
+      name: c.name,
+      email: c.email,
+      orderCount: c.orderCount,
+      totalSpend: c.totalSpend,
+      lastOrderDate: c.lastOrderDate.toISOString().slice(0, 10),
+      daysSinceLastOrder: Math.floor((now - c.lastOrderDate.getTime()) / 86400_000),
+    }))
+    .sort((a, b) => b.totalSpend - a.totalSpend);
 
   return json({ needsAuth: false as const, shop: token.shop, rows });
 }
@@ -90,42 +79,66 @@ export default function SellThrough() {
   if (data.needsAuth) {
     return (
       <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-        <h1>Sell-through analytics</h1>
+        <h1>Customer analytics</h1>
         <p>Not connected to Shopify yet.</p>
         <Link to="/auth">Connect Shopify →</Link>
       </main>
     );
   }
 
+  const th: React.CSSProperties = {
+    padding: "0.5rem 0.75rem",
+    textAlign: "left",
+    borderBottom: "2px solid #ddd",
+    whiteSpace: "nowrap",
+  };
+  const thR: React.CSSProperties = { ...th, textAlign: "right" };
+  const td: React.CSSProperties = { padding: "0.5rem 0.75rem", borderBottom: "1px solid #f0f0f0" };
+  const tdR: React.CSSProperties = { ...td, textAlign: "right" };
+
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Order cadence — bulk customers (≥ $500)</h1>
-      <p style={{ color: "#666" }}>Store: {data.shop} · last 365 days</p>
+      <h1 style={{ marginBottom: "0.25rem" }}>Top customers · all-time spend ≥ $500</h1>
+      <p style={{ color: "#666", marginTop: 0 }}>
+        Store: {data.shop} · {data.rows.length} customer{data.rows.length !== 1 ? "s" : ""}
+      </p>
+
       {data.rows.length === 0 ? (
-        <p>No bulk orders found.</p>
+        <p>No customers with $500+ total spend found.</p>
       ) : (
         <table style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
-            <tr style={{ textAlign: "left", borderBottom: "1px solid #ddd" }}>
-              <th style={{ padding: "0.5rem" }}>Month</th>
-              <th style={{ padding: "0.5rem" }}>Customer</th>
-              <th style={{ padding: "0.5rem", textAlign: "right" }}>Orders</th>
-              <th style={{ padding: "0.5rem", textAlign: "right" }}>Total $</th>
-              <th style={{ padding: "0.5rem", textAlign: "right" }}>Avg days between</th>
+            <tr>
+              <th style={th}>Customer</th>
+              <th style={th}>Email</th>
+              <th style={thR}>Orders</th>
+              <th style={thR}>Total spent</th>
+              <th style={thR}>Last order</th>
+              <th style={thR}>Days since</th>
             </tr>
           </thead>
           <tbody>
             {data.rows.map((r) => (
-              <tr key={`${r.customerId}-${r.month}`} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                <td style={{ padding: "0.5rem" }}>{r.month}</td>
-                <td style={{ padding: "0.5rem" }}>
-                  {r.name}
-                  {r.email ? <span style={{ color: "#888" }}> · {r.email}</span> : null}
-                </td>
-                <td style={{ padding: "0.5rem", textAlign: "right" }}>{r.orderCount}</td>
-                <td style={{ padding: "0.5rem", textAlign: "right" }}>${r.totalValue.toFixed(2)}</td>
-                <td style={{ padding: "0.5rem", textAlign: "right" }}>
-                  {r.avgDaysBetweenOrders == null ? "—" : r.avgDaysBetweenOrders.toFixed(1)}
+              <tr key={r.customerId}>
+                <td style={td}>{r.name}</td>
+                <td style={td}>{r.email || <span style={{ color: "#aaa" }}>—</span>}</td>
+                <td style={tdR}>{r.orderCount}</td>
+                <td style={tdR}>${r.totalSpend.toFixed(2)}</td>
+                <td style={tdR}>{r.lastOrderDate}</td>
+                <td style={tdR}>
+                  <span
+                    style={{
+                      color:
+                        r.daysSinceLastOrder > 90
+                          ? "#c0392b"
+                          : r.daysSinceLastOrder > 30
+                          ? "#e67e22"
+                          : "#27ae60",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {r.daysSinceLastOrder}d
+                  </span>
                 </td>
               </tr>
             ))}

@@ -73,11 +73,12 @@ export async function fetchAllOrders(params: {
   accessToken: string;
   sinceDays?: number;
 }): Promise<ShopifyOrder[]> {
-  const { shop, accessToken, sinceDays = 365 } = params;
-  const createdAtMin = new Date(Date.now() - sinceDays * 86400_000).toISOString();
+  const { shop, accessToken, sinceDays } = params;
   const base = `https://${shop}/admin/api/${apiVersion()}`;
-  let url: string | null =
-    `${base}/orders.json?status=any&limit=250&created_at_min=${encodeURIComponent(createdAtMin)}`;
+  const dateParam = sinceDays
+    ? `&created_at_min=${encodeURIComponent(new Date(Date.now() - sinceDays * 86400_000).toISOString())}`
+    : "";
+  let url: string | null = `${base}/orders.json?status=any&limit=250${dateParam}`;
   const all: ShopifyOrder[] = [];
   while (url) {
     const res: Response = await fetch(url, {
