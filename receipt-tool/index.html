@@ -8,35 +8,45 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f2f2f7; color: #1a1a1a; min-height: 100vh; }
 
-  .header { background: #1a1a2e; color: white; padding: 1rem 1.25rem; position: sticky; top: 0; z-index: 10; }
+  .header { background: #1a1a2e; color: white; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
   .header h1 { font-size: 1.15rem; font-weight: 700; }
+  .header button { background: none; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.75rem; cursor: pointer; }
 
-  .tabs { display: flex; background: #16213e; position: sticky; top: 56px; z-index: 9; }
+  .tabs { display: flex; background: #16213e; }
   .tab-btn { flex: 1; padding: 0.8rem 0.5rem; color: #8899aa; border: none; background: none; font-size: 0.875rem; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
   .tab-btn.active { color: #fff; border-bottom-color: #e94560; }
 
   .page { display: none; max-width: 680px; margin: 0 auto; padding: 1.25rem; }
   .page.active { display: block; }
 
-  /* Upload */
   .card { background: white; border-radius: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); overflow: hidden; margin-bottom: 1.25rem; }
   .card-body { padding: 1.5rem; }
 
+  /* Setup screen */
+  .setup-screen { max-width: 480px; margin: 3rem auto; padding: 1.25rem; }
+  .setup-screen .card-body { text-align: center; }
+  .setup-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .setup-screen h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .setup-screen p { color: #666; font-size: 0.875rem; line-height: 1.5; margin-bottom: 1.5rem; }
+  .setup-screen a { color: #e94560; }
+
+  .field { margin-bottom: 1.1rem; text-align: left; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .field input { width: 100%; border: 1px solid #d1d1d6; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.95rem; }
+  .field input:focus { outline: none; border-color: #e94560; }
+
+  .btn { display: block; width: 100%; padding: 0.85rem; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; border: none; text-align: center; transition: all 0.15s; }
+  .btn-red { background: #e94560; color: white; }
+  .btn-red:hover:not(:disabled) { background: #c73652; }
+  .btn-red:disabled { background: #ccc; cursor: default; }
+
+  /* Upload */
   .drop-zone { border: 2px dashed #d1d1d6; border-radius: 10px; padding: 2.25rem 1rem; text-align: center; cursor: pointer; position: relative; transition: all 0.2s; margin-bottom: 1.25rem; }
   .drop-zone.has-file { border-color: #e94560; background: #fff5f7; }
   .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
   .drop-icon { font-size: 2.5rem; margin-bottom: 0.6rem; }
   .drop-label { font-size: 0.9rem; color: #555; line-height: 1.4; }
   .drop-filename { font-size: 0.85rem; color: #e94560; font-weight: 600; margin-top: 0.4rem; }
-
-  .field { margin-bottom: 1.1rem; }
-  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.04em; }
-  .field input { width: 100%; border: 1px solid #d1d1d6; border-radius: 8px; padding: 0.55rem 0.8rem; font-size: 0.95rem; }
-
-  .btn { display: block; width: 100%; padding: 0.85rem; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; border: none; text-align: center; transition: all 0.15s; }
-  .btn-red { background: #e94560; color: white; }
-  .btn-red:hover:not(:disabled) { background: #c73652; }
-  .btn-red:disabled { background: #ccc; cursor: default; }
 
   .status-box { margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.875rem; line-height: 1.4; }
   .status-box.loading { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
@@ -58,7 +68,7 @@
   .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem; background: white; border-radius: 12px; margin-bottom: 0.6rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .hist-store { font-weight: 600; font-size: 0.9rem; }
   .hist-meta { font-size: 0.75rem; color: #888; margin-top: 0.15rem; }
-  .hist-total { font-weight: 700; font-size: 1rem; color: #1a1a2e; }
+  .hist-total { font-weight: 700; font-size: 1rem; }
 
   /* Dashboard */
   .month-card { background: white; border-radius: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 1.5rem; overflow: hidden; }
@@ -88,43 +98,72 @@
 </head>
 <body>
 
-<div class="header"><h1>🧾 Receipt Scanner</h1></div>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="showTab('upload')">Upload</button>
-  <button class="tab-btn" onclick="showTab('history')">History</button>
-  <button class="tab-btn" onclick="showTab('dashboard')">Dashboard</button>
-</div>
-
-<!-- UPLOAD TAB -->
-<div id="page-upload" class="page active">
-  <div class="card">
-    <div class="card-body">
-      <div class="drop-zone" id="drop-zone">
-        <input type="file" id="file-input" accept="image/*" capture="environment" onchange="onFileSelect(this)">
-        <div class="drop-icon">📷</div>
-        <div class="drop-label">Tap to take a photo or choose from library</div>
-        <div class="drop-filename" id="filename"></div>
+<!-- SETUP SCREEN (shown if no API key) -->
+<div id="setup-screen" style="display:none">
+  <div class="setup-screen">
+    <div class="card">
+      <div class="card-body">
+        <div class="setup-icon">🧾</div>
+        <h2>Receipt Scanner</h2>
+        <p>
+          To read your receipts, this tool needs an Anthropic API key.<br><br>
+          Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+          → API Keys → Create key.
+        </p>
+        <div class="field">
+          <label>Your API Key</label>
+          <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+        </div>
+        <button class="btn btn-red" onclick="saveKey()">Save &amp; Continue</button>
+        <p style="margin-top:0.75rem;font-size:0.75rem;color:#aaa">Saved only to your browser — never sent anywhere except Anthropic.</p>
       </div>
-      <div class="field">
-        <label>Date override <span style="font-weight:400;text-transform:none">(optional — leave blank to read from receipt)</span></label>
-        <input type="date" id="date-input">
-      </div>
-      <button class="btn btn-red" id="scan-btn" onclick="scanReceipt()" disabled>Scan Receipt</button>
-      <div id="status-box" style="display:none" class="status-box"></div>
     </div>
   </div>
-  <div id="result-area"></div>
 </div>
 
-<!-- HISTORY TAB -->
-<div id="page-history" class="page">
-  <div id="history-list"></div>
-</div>
+<!-- MAIN APP -->
+<div id="main-app" style="display:none">
+  <div class="header">
+    <h1>🧾 Receipt Scanner</h1>
+    <button onclick="changeKey()">API Key</button>
+  </div>
 
-<!-- DASHBOARD TAB -->
-<div id="page-dashboard" class="page">
-  <div id="dashboard-content"></div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('upload')">Upload</button>
+    <button class="tab-btn" onclick="showTab('history')">History</button>
+    <button class="tab-btn" onclick="showTab('dashboard')">Dashboard</button>
+  </div>
+
+  <!-- UPLOAD -->
+  <div id="page-upload" class="page active">
+    <div class="card">
+      <div class="card-body">
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="file-input" accept="image/*" capture="environment" onchange="onFileSelect(this)">
+          <div class="drop-icon">📷</div>
+          <div class="drop-label">Tap to take a photo or choose from library</div>
+          <div class="drop-filename" id="filename"></div>
+        </div>
+        <div class="field">
+          <label>Date <span style="font-weight:400;text-transform:none;font-size:0.75rem">(optional — leave blank to read from receipt)</span></label>
+          <input type="date" id="date-input">
+        </div>
+        <button class="btn btn-red" id="scan-btn" onclick="scanReceipt()" disabled>Scan Receipt</button>
+        <div id="status-box" style="display:none" class="status-box"></div>
+      </div>
+    </div>
+    <div id="result-area"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="page-history" class="page">
+    <div id="history-list"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page">
+    <div id="dashboard-content"></div>
+  </div>
 </div>
 
 <script>
@@ -135,7 +174,30 @@ const COLORS = {
 };
 
 let selectedFile = null;
-let receipts = [];
+
+// ── Startup ───────────────────────────────────────
+function init() {
+  const key = localStorage.getItem('anthropic_key');
+  if (key) {
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+  } else {
+    document.getElementById('setup-screen').style.display = 'block';
+    document.getElementById('main-app').style.display = 'none';
+  }
+}
+
+function saveKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-')) return alert('Please enter a valid API key (starts with sk-ant-)');
+  localStorage.setItem('anthropic_key', key);
+  init();
+}
+
+function changeKey() {
+  const key = prompt('Enter new API key:');
+  if (key) { localStorage.setItem('anthropic_key', key.trim()); }
+}
 
 // ── Tabs ──────────────────────────────────────────
 function showTab(name) {
@@ -143,24 +205,19 @@ function showTab(name) {
     document.getElementById('page-' + t).classList.toggle('active', t === name);
     document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t === name);
   });
-  if (name === 'history' || name === 'dashboard') {
-    fetchReceipts().then(() => {
-      if (name === 'history') renderHistory();
-      if (name === 'dashboard') renderDashboard();
-    });
-  }
+  if (name === 'history') renderHistory();
+  if (name === 'dashboard') renderDashboard();
 }
 
 // ── File select ───────────────────────────────────
 function onFileSelect(input) {
   selectedFile = input.files[0] || null;
-  const dz = document.getElementById('drop-zone');
-  dz.classList.toggle('has-file', !!selectedFile);
+  document.getElementById('drop-zone').classList.toggle('has-file', !!selectedFile);
   document.getElementById('filename').textContent = selectedFile ? selectedFile.name : '';
   document.getElementById('scan-btn').disabled = !selectedFile;
 }
 
-// ── Upload & parse ────────────────────────────────
+// ── Scan ──────────────────────────────────────────
 async function scanReceipt() {
   if (!selectedFile) return;
   const btn = document.getElementById('scan-btn');
@@ -176,18 +233,68 @@ async function scanReceipt() {
   try {
     const base64 = await fileToBase64(selectedFile);
     const date = document.getElementById('date-input').value || '';
-    const res = await fetch('/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ base64, mediaType: selectedFile.type || 'image/jpeg', date }),
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    const apiKey = localStorage.getItem('anthropic_key');
 
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: selectedFile.type || 'image/jpeg', data: base64 } },
+            { type: 'text', text: `Parse this grocery receipt. Return ONLY valid JSON, no other text:
+{
+  "store_name": "store name or null",
+  "purchased_at": "YYYY-MM-DD",
+  "total_amount": 0.00,
+  "items": [
+    {
+      "name": "item name",
+      "category": "Protein|Grains|Vegetables|Fruits|Dairy|Beverages|Snacks|Household|Other",
+      "quantity": 1,
+      "unit": "lb/oz/kg/each/pack or null",
+      "unit_price": 0.00,
+      "total_price": 0.00
+    }
+  ]
+}
+
+Categories: Protein=meat/fish/eggs/beans, Grains=rice/quinoa/pasta/bread/oats, Vegetables=all veg, Fruits=all fruit, Dairy=milk/cheese/yogurt, Beverages=drinks/coffee/tea, Snacks=chips/cookies/candy/nuts, Household=cleaning/paper/toiletries, Other=everything else.
+Skip tax, fees, and payment lines. Only actual purchased items.` }
+          ]
+        }]
+      })
+    });
+
+    if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const text = data.content[0].text;
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Could not read response from AI');
+    const parsed = JSON.parse(match[0]);
+    if (date) parsed.purchased_at = date;
+
+    const receipt = {
+      id: Date.now().toString(),
+      store_name: parsed.store_name || null,
+      purchased_at: parsed.purchased_at || new Date().toISOString().slice(0, 10),
+      total_amount: parsed.total_amount || null,
+      items: parsed.items || [],
+      created_at: new Date().toISOString(),
+    };
+
+    saveReceipt(receipt);
     statusBox.className = 'status-box success';
-    statusBox.textContent = `Done! Found ${data.items.length} items.`;
-    renderResult(data);
-    receipts.unshift(data);
+    statusBox.textContent = `Done! Found ${receipt.items.length} items.`;
+    renderResult(receipt);
   } catch (e) {
     statusBox.className = 'status-box error';
     statusBox.textContent = 'Error: ' + e.message;
@@ -206,32 +313,39 @@ function fileToBase64(file) {
   });
 }
 
+// ── Storage ───────────────────────────────────────
+function loadReceipts() {
+  try { return JSON.parse(localStorage.getItem('receipts') || '[]'); }
+  catch { return []; }
+}
+
+function saveReceipt(receipt) {
+  const receipts = loadReceipts();
+  receipts.push(receipt);
+  localStorage.setItem('receipts', JSON.stringify(receipts));
+}
+
 // ── Result card ───────────────────────────────────
 function renderResult(receipt) {
   const byCategory = {};
-  receipt.items.forEach(i => {
-    byCategory[i.category] = (byCategory[i.category] || 0) + i.total_price;
-  });
+  receipt.items.forEach(i => { byCategory[i.category] = (byCategory[i.category] || 0) + i.total_price; });
 
-  const pills = Object.entries(byCategory).sort((a,b)=>b[1]-a[1])
-    .map(([cat, total]) =>
-      `<span class="pill" style="background:${COLORS[cat]||'#999'}">${cat} $${total.toFixed(2)}</span>`
-    ).join('');
+  const pills = Object.entries(byCategory).sort((a,b) => b[1]-a[1])
+    .map(([cat, t]) => `<span class="pill" style="background:${COLORS[cat]||'#999'}">${cat} $${t.toFixed(2)}</span>`).join('');
 
-  const rows = receipt.items.map(item =>
+  const rows = receipt.items.map(i =>
     `<tr>
-      <td>${item.name}</td>
-      <td><span class="pill" style="background:${COLORS[item.category]||'#999'}">${item.category}</span></td>
-      <td>${item.quantity}${item.unit ? ' ' + item.unit : ''}</td>
-      <td>$${item.total_price.toFixed(2)}</td>
-    </tr>`
-  ).join('');
+      <td>${i.name}</td>
+      <td><span class="pill" style="background:${COLORS[i.category]||'#999'}">${i.category}</span></td>
+      <td>${i.quantity}${i.unit ? ' ' + i.unit : ''}</td>
+      <td>$${i.total_price.toFixed(2)}</td>
+    </tr>`).join('');
 
   document.getElementById('result-area').innerHTML = `
     <div class="card">
       <div class="result-header">
         <h3>${receipt.store_name || 'Receipt'}</h3>
-        <p>${receipt.purchased_at}${receipt.total_amount != null ? ' · $' + receipt.total_amount.toFixed(2) + ' total' : ''}</p>
+        <p>${receipt.purchased_at}${receipt.total_amount != null ? ' · $' + receipt.total_amount.toFixed(2) : ''}</p>
       </div>
       <div class="pills-row">${pills}</div>
       <table class="items-table">
@@ -241,14 +355,9 @@ function renderResult(receipt) {
     </div>`;
 }
 
-// ── Data ──────────────────────────────────────────
-async function fetchReceipts() {
-  const res = await fetch('/receipts');
-  receipts = await res.json();
-}
-
 // ── History ───────────────────────────────────────
 function renderHistory() {
+  const receipts = loadReceipts().slice().reverse();
   const el = document.getElementById('history-list');
   if (!receipts.length) {
     el.innerHTML = `<div class="empty"><div class="empty-icon">🧾</div><p>No receipts yet.<br>Upload one on the Upload tab.</p></div>`;
@@ -266,6 +375,7 @@ function renderHistory() {
 
 // ── Dashboard ─────────────────────────────────────
 function renderDashboard() {
+  const receipts = loadReceipts();
   const el = document.getElementById('dashboard-content');
   if (!receipts.length) {
     el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><p>No data yet.<br>Scan some receipts and come back here.</p></div>`;
@@ -286,45 +396,34 @@ function renderDashboard() {
     }
   }
 
-  el.innerHTML = Object.entries(months)
-    .sort((a,b) => b[0].localeCompare(a[0]))
-    .map(([month, data]) => {
-      const label = new Date(month + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' });
-      const topItems = Object.entries(data.itemMap)
-        .map(([name, v]) => ({ name, ...v }))
-        .sort((a,b) => b.total - a.total)
-        .slice(0, 20);
-      const maxTotal = topItems[0]?.total || 1;
+  el.innerHTML = Object.entries(months).sort((a,b) => b[0].localeCompare(a[0])).map(([month, data]) => {
+    const label = new Date(month + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    const topItems = Object.entries(data.itemMap).map(([name, v]) => ({ name, ...v })).sort((a,b) => b.total - a.total).slice(0, 20);
+    const maxTotal = topItems[0]?.total || 1;
 
-      const catChips = Object.entries(data.byCat).sort((a,b) => b[1]-a[1])
-        .map(([cat, total]) =>
-          `<div class="cat-chip" style="background:${COLORS[cat]||'#999'}">${cat} &nbsp;$${total.toFixed(2)}</div>`
-        ).join('');
+    const catChips = Object.entries(data.byCat).sort((a,b) => b[1]-a[1])
+      .map(([cat, t]) => `<div class="cat-chip" style="background:${COLORS[cat]||'#999'}">${cat} &nbsp;$${t.toFixed(2)}</div>`).join('');
 
-      const itemRows = topItems.map(item =>
-        `<div class="item-row">
-          <div class="item-dot" style="background:${COLORS[item.cat]||'#999'}"></div>
-          <div class="item-name">${item.name}</div>
-          <div class="bar-wrap">
-            <div class="bar" style="background:${COLORS[item.cat]||'#999'};width:${Math.round(item.total/maxTotal*100)}%;opacity:0.75"></div>
-          </div>
-          <div class="item-amt">$${item.total.toFixed(2)}</div>
-        </div>`
-      ).join('');
+    const itemRows = topItems.map(item =>
+      `<div class="item-row">
+        <div class="item-dot" style="background:${COLORS[item.cat]||'#999'}"></div>
+        <div class="item-name">${item.name}</div>
+        <div class="bar-wrap"><div class="bar" style="background:${COLORS[item.cat]||'#999'};width:${Math.round(item.total/maxTotal*100)}%;opacity:0.75"></div></div>
+        <div class="item-amt">$${item.total.toFixed(2)}</div>
+      </div>`).join('');
 
-      return `
-        <div class="month-card">
-          <div class="month-head">
-            <h2>${label}</h2>
-            <div class="month-total">$${data.spend.toFixed(2)}</div>
-          </div>
-          <div class="section-title">By category</div>
-          <div class="cat-chips">${catChips}</div>
-          <div class="section-title">Top items</div>
-          <div class="items-body">${itemRows}</div>
-        </div>`;
-    }).join('');
+    return `
+      <div class="month-card">
+        <div class="month-head"><h2>${label}</h2><div class="month-total">$${data.spend.toFixed(2)}</div></div>
+        <div class="section-title">By category</div>
+        <div class="cat-chips">${catChips}</div>
+        <div class="section-title">Top items</div>
+        <div class="items-body">${itemRows}</div>
+      </div>`;
+  }).join('');
 }
+
+init();
 </script>
 </body>
 </html>
